@@ -1,5 +1,6 @@
 'use strict';
 
+var _ = require('lodash');
 var util = require('util');
 var SeAHEngDevice = require('./seahEngDevice');
 
@@ -16,13 +17,32 @@ function makeRegisterDescription(name, address, bit, scale) {
     readType: 'readUInt16BE',
   };
 
-  if (_.isUndefined(bit)) {
+  if (!_.isUndefined(bit)) {
     description.converter = function(value) {
       return  ((value >> bit) & 1);
     };        
   }
 
-  if (_.isUndefined(scale)) {
+  if (!_.isUndefined(scale)) {
+    description.scale = scale;
+  }
+
+  return  description;
+}
+
+function makeWriteOnlyRegisterDescription(name, address, bit, scale) {
+  var description = {
+    name: camelize(name),
+    address: address
+  };
+
+  if (!_.isUndefined(bit)) {
+    description.converter = function(value) {
+      return  ((value >> bit) & 1);
+    };        
+  }
+
+  if (!_.isUndefined(scale)) {
     description.scale = scale;
   }
 
@@ -33,8 +53,9 @@ function SeAHEngDeviceCompressor(master) {
   var self = this;
 
   var config = {
-    type: 'Compressor',
+    type: 'compressor',
     memoryZones: [
+      { address: 30025, count: 18 },
       { address: 30100, count: 90 },
       { address: 40200, count: 44 },
       { address: 40260, count: 4 },
@@ -42,13 +63,13 @@ function SeAHEngDeviceCompressor(master) {
       { address: 40300, count: 2 }
     ],
     registers : [
-      makeRegisterDescription('Comp. Start Cmd', 320,undefined,undefined),
-      makeRegisterDescription('Comp. Stop Cmd', 321,undefined,undefined),
-      makeRegisterDescription('Alarm Reset Cmd', 322,undefined,undefined),
-      makeRegisterDescription('Load Select Cmd', 323,undefined,undefined),
-      makeRegisterDescription('Unload Select Cmd', 324,undefined,undefined),
-      makeRegisterDescription('Aux. Oil Pump Start Cmd', 325,undefined,undefined),
-      makeRegisterDescription('Aux. Oil Pump Stop Cmd', 326,undefined,undefined),
+      makeWriteOnlyRegisterDescription('Comp. Start Cmd', 320,undefined,undefined),
+      makeWriteOnlyRegisterDescription('Comp. Stop Cmd', 321,undefined,undefined),
+      makeWriteOnlyRegisterDescription('Alarm Reset Cmd', 322,undefined,undefined),
+      makeWriteOnlyRegisterDescription('Load Select Cmd', 323,undefined,undefined),
+      makeWriteOnlyRegisterDescription('Unload Select Cmd', 324,undefined,undefined),
+      makeWriteOnlyRegisterDescription('Aux. Oil Pump Start Cmd', 325,undefined,undefined),
+      makeWriteOnlyRegisterDescription('Aux. Oil Pump Stop Cmd', 326,undefined,undefined),
       makeRegisterDescription('Common Trip', 30025,0 ,undefined),
       makeRegisterDescription('Common Alarm', 30025,1 ,undefined),
       makeRegisterDescription('Common Sensor Fault', 30025,2 ,undefined),

@@ -1,2 +1,2 @@
-# sensorjs-neopis
-The Sensor.js module for NEOPIS 
+# sensorjs-seah
+The Sensor.js module for SeAH

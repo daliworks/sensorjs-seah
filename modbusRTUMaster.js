@@ -18,7 +18,7 @@ try {
 }
 
 var MODBUS_UNIT_ID = 1;
-var UPDATE_INTERVAL = 2000;
+var UPDATE_INTERVAL = 10000;
 var RETRY_CONNECTION_INTERVAL = 60000;
 
 // client: modbus client
@@ -66,25 +66,25 @@ function ModbusRTUMaster(host, port) {
     if (30000 <= task.registerAddress && task.registerAddress <= 39999) {
       readRegisters = client.readInputRegisters;
       from = task.registerAddress - 30000;
-      to = from + task.registerCount;
+      to = from + task.registerCount - 1;
     } else if (40000 <= task.registerAddress && task.registerAddress <= 49999) {
       readRegisters = client.readHoldingRegisters;
       from = task.registerAddress - 40000;
-      to = from + task.registerCount;
+      to = from + task.registerCount - 1;
     } else {
-      return done('Invalid address : ', task.registerAddress);
+      return done('Invalid address : ' + task.registerAddress);
     }
 
     self.log('Read Register :', unitId, from, to);
     readRegisters(unitId, from, to, function readCb(err, data) {
       if (!err) {
         if (data.length < 2 || !Buffer.isBuffer(data[0]) || !Buffer.isBuffer(data[1])) {
-          self.log('error', 'modbus-tcp.readHoldingRegisters() Error: bad data format');
+          self.log('error', 'modbus-tcp.readRegisters() Error: bad data format');
           err = new Error('Bad data:', data);
         }
       }
       else {
-        self.log('error', 'modbus-tcp.readHoldingRegisters() Error:', err);
+        self.log('error', 'modbus-tcp.readRegisters() Error:', err);
       }
 
       cb && cb(err, task.registerAddress, task.registerCount, data);

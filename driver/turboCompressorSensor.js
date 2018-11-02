@@ -64,13 +64,17 @@ util.inherits(SeAHEngSensor, Sensor);
 SeAHEngSensor.properties = {
   supportedNetworks: ['seahEng'],
   dataTypes: {
-    'seahEngPressure' : ['pressure'],
-    'seahEngFilerPressure' : ['pressure'],
-    'seahEngVibration' : ['vibration'],
-    'seahEngTemperature' : ['temperature'],
-    'seahEngPercent' : ['percent'],
-    'seahEngOnOff' : ['onoff'],
-    'seahEngNumber' : ['number'] 
+    'seahEngTurboCompressorCount' : ['count'],
+    'seahEngTurboCompressorCurrent' : ['current'],
+    'seahEngTurboCompressorFrequency' : ['frequency'] ,
+    'seahEngTurboCompressorNumber' : ['number'],
+    'seahEngTurboCompressorOnoff' : ['onoff'],
+    'seahEngTurboCompressorPercent' : ['percent'],
+    'seahEngTurboCompressorPressureMMH2O' : ['pressure'],
+    'seahEngTurboCompressorPressure' : ['pressure'],
+    'seahEngTurboCompressorTemperature' : ['temperature'],
+    'seahEngTurboCompressorVibration' : ['vibration'],
+    'seahEngTurboCompressorVolume' : ['volume']
   },
   discoverable: false,
   addressable: true,
@@ -79,22 +83,30 @@ SeAHEngSensor.properties = {
   maxRetries: 8,
   idTemplate: '{gatewayId}-{deviceAddress}-{sequence}',
   onChange: {
-    'seahEngPressure' : false,
-    'seahEngFilerPressure' : false,
-    'seahEngVibration' : false,
-    'seahEngTemperature' : false,
-    'seahEngPercent' : false,
-    'seahEngOnOff' : true,
-    'seahEngNumber' : false
+    'seahEngTurboCompressorCount' : false,
+    'seahEngTurboCompressorCurrent' : false,
+    'seahEngTurboCompressorFrequency' : false,
+    'seahEngTurboCompressorNumber' : false,
+    'seahEngTurboCompressorOnoff' : true,
+    'seahEngTurboCompressorPercent' : false,
+    'seahEngTurboCompressorPressure' : false,
+    'seahEngTurboCompressorPressureMMH2O' : false,
+    'seahEngTurboCompressorTemperature' : false,
+    'seahEngTurboCompressorVibration' : false,
+    'seahEngTurboCompressorVolume' : false
   },
   models: [
-    'seahEngPressure',
-    'seahEngFilerPressure',
-    'seahEngVibration',
-    'seahEngTemperature',
-    'seahEngPercent',
-    'seahEngOnOff',
-    'seahEngNumber'
+    'seahEngTurboCompressorCount',
+    'seahEngTurboCompressorCurrent',
+    'seahEngTurboCompressorFrequency',
+    'seahEngTurboCompressorNumber',
+    'seahEngTurboCompressorOnoff',
+    'seahEngTurboCompressorPercent',
+    'seahEngTurboCompressorPressure',
+    'seahEngTurboCompressorPressureMMH2O',
+    'seahEngTurboCompressorTemperature',
+    'seahEngTurboCompressorVibration',
+    'seahEngTurboCompressorVolume'
   ],
   category: 'sensor'
 };

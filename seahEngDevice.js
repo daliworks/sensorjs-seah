@@ -4,7 +4,7 @@ var _ = require('lodash');
 var util = require('util');
 var ModbusDevice = require('./modbusRTUDevice');
 
-function SmartPMSDevice(master, config) {
+function SeahEngDevice(master, config) {
   var self = this;
 
   self.type = config.type;
@@ -12,54 +12,46 @@ function SmartPMSDevice(master, config) {
   ModbusDevice.call(self, master, config);
 }
 
-util.inherits(SmartPMSDevice, ModbusDevice);
+util.inherits(SeahEngDevice, ModbusDevice);
 
-SmartPMSDevice.prototype.onDone = function (startAddress, count, registers) {
+SeahEngDevice.prototype.onDone = function (startAddress, count, registers) {
   var self = this;
 
-  SmartPMSDevice.super_.prototype.onDone.call(self, startAddress, count, registers);
+  SeahEngDevice.super_.prototype.onDone.call(self, startAddress, count, registers);
 
   _.each(self.registers, function(register) {
-    if (register.activated) {
+    if (register.activated && (startAddress <= register.address) && (register.address < startAddress + count)) {
       self.log('trace', 'self.emit(', register.name, ',', {value: register.value, time: register.time}, ')');
       self.emit(register.name, {value: register.value, time: register.time});
     }
   });
 };
 
-SmartPMSDevice.prototype.activeField = function(name) {
+SeahEngDevice.prototype.activeField = function(name) {
   var self = this;
 
-  var register = _.find(self.registers, function(register) {
-    return  (register.name === name);
-  });
-
+  var register = _.find(self.registers, { name: name});
   if (register) {
     register.activated = true;
   }
 };
 
-SmartPMSDevice.prototype.getValue = function(name) {
+SeahEngDevice.prototype.getValue = function(name) {
   var self = this;
 
-  var register = _.find(self.registers, function(register) {
-    return  (register.name === name);
-  });
-
-  var result;
-
-  if (register) {
-    result = { value: register.value, time: register.time};
+  var register = _.find(self.registers, { name: name});
+  if (!register) {
+    return  undefined;
   }
 
-  return  result;
+  return { value: register.value, time: register.time};
 };
 
-SmartPMSDevice.prototype.getConnectionTimeout = function() {
+SeahEngDevice.prototype.getConnectionTimeout = function() {
   return  10000;
 };
 
-SmartPMSDevice.prototype.updateSimulationValue = function(register) {
+SeahEngDevice.prototype.updateSimulationValue = function(register) {
   var self = this;
 
   try {
@@ -94,7 +86,7 @@ SmartPMSDevice.prototype.updateSimulationValue = function(register) {
   }
 };
 
-SmartPMSDevice.prototype.updateSimulation = function() {
+SeahEngDevice.prototype.updateSimulation = function() {
   var self = this;
 
   if (_.isUndefined(self.lastUpdatedTime) || ((new Date().getTime() - self.lastUpdatedTime) > 1000)) {
@@ -122,4 +114,4 @@ SmartPMSDevice.prototype.updateSimulation = function() {
   }
 };
 
-module.exports = SmartPMSDevice;
+module.exports = SeahEngDevice;

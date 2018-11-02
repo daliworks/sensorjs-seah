@@ -5,6 +5,17 @@ var util = require('util');
 var EventEmitter = require('events').EventEmitter;
 var logger = require('.').Sensor.getLogger('Sensor');
 
+var registerSize = {
+  readInt16BE: 1,
+  readUInt16BE: 1,
+  readInt16LE: 1,
+  readUInt16LE: 1,
+  readInt32BE: 2,
+  readUInt32BE: 2,
+  readInt32LE: 2,
+  readUInt32LE: 2
+};
+
 function ModbusRTUDevice(master, config) {
   var self = this;
 
@@ -40,22 +51,27 @@ function ModbusRTUDevice(master, config) {
   });
 
   _.each(config.registers, function(registerInfo) {
-    if (registerInfo && registerInfo.address) {
-      var memorySize = 2;
+    if (registerInfo && registerInfo.address && !_.isUndefined(registerInfo.readType)) {
+      var memorySize = 1;
       var register = _.cloneDeep(registerInfo);
+
+      if (registerSize[registerInfo.readType]) {
+        memorySize = registerSize[registerInfo.readType];
+      }
 
       var memoryZone = _.find(self.memoryZones, function(memoryZone) {
         return ((memoryZone.address <= register.address) &&
-          ((register.address + memorySize) < memoryZone.address + memoryZone.count * 2));
+          ((register.address + memorySize - 1) < memoryZone.address + memoryZone.count));
       });
 
       if (!memoryZone) {
         memoryZone = {
           address: register.address,
-          count: memorySize / 2,
+          count: memorySize,
           registers: []
         };
 
+        self.log('trace', 'New memory zone : ', memoryZone);
         self.memoryZones.push(memoryZone);
       }
 
@@ -73,12 +89,14 @@ ModbusRTUDevice.prototype.onDone = function (startAddress, count, registers) {
   var self = this;
 
   _.each(self.registers, function (register) {
-    if (startAddress <= register.address && register.address < startAddress + count * 2) {
+    if (!_.isUndefined(register.readType) && (startAddress <= register.address && register.address < startAddress + count)) {
       try{
         var buffer = new Buffer(4);
-  
+ 
         registers[register.address - startAddress].copy(buffer, 0);
-        registers[register.address - startAddress + 1].copy(buffer, 2);
+        if (registerSize[register.readType] > 1) {
+          registers[register.address - startAddress + 1].copy(buffer, 2);
+        }
   
         if (register.converter) {
           register.value = register.converter(buffer[register.readType](0) || 0);
@@ -93,7 +111,7 @@ ModbusRTUDevice.prototype.onDone = function (startAddress, count, registers) {
       }
       catch(err) {
         self.log('trace', register);
-        self.log('error', err);
+        self.log('error', 'Occurred exception : ', startAddress, register.address, err);
       }
     }
   });

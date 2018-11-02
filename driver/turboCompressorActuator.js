@@ -17,28 +17,30 @@ function SeAHEngActuator(sensorInfo, options) {
   self.field = tokens[2];
   self.lastTime = 0;
 
-  self.device = SeAHEng.getDevice(self.deviceId);
+  self.device = SeAHEng.getDevice('compressor', self.deviceId);
 
-  if (sensorInfo.model) {
-    self.model = sensorInfo.model;
+  if (self.device) {
+    if (sensorInfo.model) {
+      self.model = sensorInfo.model;
+    }
+
+    self.dataType = SeAHEngActuator.properties.dataTypes[self.model][0];
+    self.device.activeField(self.field);
   }
-
-  self.dataType = SeAHEngActuator.properties.dataTypes[self.model][0];
-  self.device.activeField(self.field);
 }
 
 SeAHEngActuator.properties = {
   supportedNetworks: ['seahEng'],
   dataTypes: {
-    'seahEngOnOff': ['powerSwitch'],
-    'seahEngStringActuator': ['stringActuator']
+    'seahEngTurboCompressorPowerSwitch': ['powerSwitch'],
+    'seahEngTurboCompressorStringActuator': ['stringActuator']
   },
   models: [
-    'seahEngOnOff',
-    'seahEngStringActuator'
+    'seahEngTurboCompressorPowerSwitch',
+    'seahEngTurboCompressorStringActuator'
   ],
   commands: {
-    'seahEngOnOff': {
+    'seahEngTurboCompressorPowerSwitch': {
       'on' : [],
       'off' : []
     }

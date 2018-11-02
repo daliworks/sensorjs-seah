@@ -7,25 +7,26 @@ var ModbusMaster = require('./modbusRTUMaster');
 var SeAHEngBlower = require('./seahEngBlower');
 var SeAHEngCompressor = require('./seahEngCompressor');
 
-function SeAHEng(address) {
+function SeAHEng(host) {
   var   self = this;
 
-  ModbusMaster.call(self, address, 502);
+  ModbusMaster.call(self, host, 502);
 
-  self.log('trace', 'Create :', address);
+  self.log('trace', 'Create :', host);
 }
 
 util.inherits(SeAHEng, ModbusMaster);
 
 var seahEngs = [];
 
-function getSeAHEng(address){
+function getSeAHEng(host){
   var seahEng = _.find(seahEngs, function(seahEng) {
-    return  (seahEng.address === parseInt(address));
+    return  (seahEng.host === host);
   });
 
   if (!seahEng) {
-    seahEng = new SeAHEng(address);
+    logger.info('Create new SeAHEng');
+    seahEng = new SeAHEng(host);
     seahEngs.push(seahEng);
     seahEng.start();
   }
@@ -35,26 +36,32 @@ function getSeAHEng(address){
 
 module.exports = {
   get: getSeAHEng,
-  getDevice: function(type, address){
+  getDevice: function(type, host){
     try {
-      var seahEng = getSeAHEng(address);
+      var seahEng = getSeAHEng(host);
+      if (_.isUndefined(seahEng[type])) {
+        switch (type) {
+        case 'blower':
+          logger.info('Create blower');
+          seahEng.blower = new SeAHEngBlower(seahEng);
+          seahEng.devices.push(seahEng.blower);
+          break;
+        case 'compressor':
+          logger.info('Create compressor');
+          seahEng.compressor = new SeAHEngCompressor(seahEng);
+          seahEng.devices.push(seahEng.compressor);
+          break;
 
-      switch(type) {
-      case  'blower':
-        seahEng.EMS = new SeAHEngBlower(seahEng);
-        seahEng.devices.push(seahEng.EMS);
-        break;
-      case 'compressor':
-        seahEng.PMS = new SeAHEngCompressor(seahEng);
-        seahEng.devices.push(seahEng.PMS);
-        break;
+        default:
+          logger.error('Not supported device type :', type);
+        }
       }
-      
-      return  seahEng[type];
+
+      return seahEng[type];
     }
-    catch(err) {
-      logger.error('Device not found :', type, address);
-      return  undefined;
+    catch (err) {
+      logger.error('error :', err.message);
+      return undefined;
     }
   }
 };

@@ -3,28 +3,40 @@
 var logger = require('log4js').getLogger('Sensor');
 
 function initDrivers() {
-  var actuator;
-  var sensor;
+  var turboCompressorActuator;
+  var turboCompressorSensor;
+  var blowerActuator;
+  var blowerSensor;
 
   try {
-    actuator = require('./driver/actuator');
+    blowerActuator = require('./driver/blowerActuator');
   } catch (e) {
-    logger.error('Cannot load ./driver/actuator', e);
+    logger.error('Cannot load ./driver/blowerActuator', e);
   }
 
   try {
-    sensor = require('./driver/sensor');
+    blowerSensor = require('./driver/blowerSensor');
   } catch (e) {
-    logger.error('Cannot load ./driver/sensor', e);
+    logger.error('Cannot load ./driver/blowerSensor', e);
+  }
+
+  try {
+    turboCompressorActuator = require('./driver/turboCompressorActuator');
+  } catch (e) {
+    logger.error('Cannot load ./driver/turboCompressorActuator', e);
+  }
+
+  try {
+    turboCompressorSensor = require('./driver/turboCompressorSensor');
+  } catch (e) {
+    logger.error('Cannot load ./driver/turboCompressorSensor', e);
   }
 
   return {
-    neopisSmartPMSPMSActuator: actuator,
-    neopisSmartPMSPMSSensor: sensor,
-    neopisSmartPMSEMSSensor: sensor,
-    neopisSmartPMSSPSensor: sensor,
-    neopisSmartPMSPCSSensor: sensor,
-    neopisSmartPMSBATSensor: sensor
+    seahEngBlowerSensor: blowerSensor,
+    seahEngBlowerActuator: blowerActuator,
+    seahEngTurboCompressorSensor: turboCompressorSensor,
+    seahEngTurboCompressorActuator: turboCompressorActuator
   };
 }
 
@@ -32,9 +44,9 @@ function initNetworks() {
   var network;
 
   try {
-    network = require('./network/neopisSmartPMS');
+    network = require('./network/seahEng');
   } catch (e) {
-    logger.error('Cannot load ./network/neopisSmartPMS', e);
+    logger.error('Cannot load ./network/seahEng', e);
   }
 
   return {
@@ -43,82 +55,41 @@ function initNetworks() {
 }
 
 module.exports = {
-  networks: ['neopisSmartPMS'],
+  networks: ['seahEng'],
   drivers: {
-    neopisSmartPMSPMSActuator: [
-      'neopisSmartPMSPMSChargeModeSet',
-      'neopisSmartPMSPMSChargePowerSet',
-      'neopisSmartPMSPMSConfigSet',
-      'neopisSmartPMSPMSControlModeSet',
-      'neopisSmartPMSPMSOperationModeSet'
+    seahEngBlowerSensor: [
+      'seahEngBlowerCount',
+      'seahEngBlowerCurrent',
+      'seahEngBlowerFrequency',
+      'seahEngBlowerPressureMMH2O',
+      'seahEngBlowerNumber',
+      'seahEngBlowerOnoff',
+      'seahEngBlowerPercent',
+      'seahEngBlowerPressure',
+      'seahEngBlowerTemperature',
+      'seahEngBlowerVibration',
+      'seahEngBlowerVolume'
     ],
-    neopisSmartPMSPMSSensor: [
-      'neopisSmartPMSPMSChargeModeStatus',
-      'neopisSmartPMSPMSCommunicationError',
-      'neopisSmartPMSPMSControlModeStatus',
-      'neopisSmartPMSPMSDate',
-      'neopisSmartPMSPMSEnergy',
-      'neopisSmartPMSPMSFailureStatus',
-      'neopisSmartPMSPMSOperationStatus',
-      'neopisSmartPMSPMSPower',
-      'neopisSmartPMSPMSPowerCapacity',
-      'neopisSmartPMSPMSPowerRating',
-      'neopisSmartPMSPMSSOCStatus',
-      'neopisSmartPMSPMSTime',
-      'neopisSmartPMSPMSPercent'
+    seahEngBlowerActuator: [
+      'seahEngBlowerPowerSwitch',
+      'seahEngBlowerStringActuator'
     ],
-    neopisSmartPMSEMSSensor: [
-      'neopisSmartPMSEMSEnergy'
+    seahEngTurboCompressorSensor: [
+      'seahEngTurboCompressorCount',
+      'seahEngTurboCompressorCurrent',
+      'seahEngTurboCompressorFrequency',
+      'seahEngTurboCompressorPressureMMH2O',
+      'seahEngTurboCompressorNumber',
+      'seahEngTurboCompressorOnoff',
+      'seahEngTurboCompressorPercent',
+      'seahEngTurboCompressorPressure',
+      'seahEngTurboCompressorTemperature',
+      'seahEngTurboCompressorVibration',
+      'seahEngTurboCompressorVolume'
     ],
-    neopisSmartPMSSPSensor: [
-      'neopisSmartPMSSPStatus',
-      'neopisSmartPMSSPTemperature',
-      'neopisSmartPMSSPVoltage',
-      'neopisSmartPMSSPCurrent',
-      'neopisSmartPMSSPPower',
-      'neopisSmartPMSSPEnergy',
-      'neopisSmartPMSSPError'
-    ],
-    neopisSmartPMSPCSSensor: [
-      'neopisSmartPMSPCSStatus',
-      'neopisSmartPMSPCSError',
-      'neopisSmartPMSPCSControlMode',
-      'neopisSmartPMSPCSTemperature',
-      'neopisSmartPMSPCSVoltage',
-      'neopisSmartPMSPCSCurrent',
-      'neopisSmartPMSPCSPower',
-      'neopisSmartPMSPCSEnergy',
-      'neopisSmartPMSPCSPowerFactor',
-      'neopisSmartPMSPCSFrequency',
-      'neopisSmartPMSPCSFrequencyStatus',
-      'neopisSmartPMSPCSOperationStatus',
-      'neopisSmartPMSPCSError',
-      'neopisSmartPMSPCSErrorStatus',
-      'neopisSmartPMSPCSLocationStatus',
-      'neopisSmartPMSPCSFrequencyStatus',
-      'neopisSmartPMSPCSVoltageStatus',
-      'neopisSmartPMSPCSCurrentStatus',
-      'neopisSmartPMSPCSControlMode',
-      'neopisSmartPMSPCSEmergencyBell'
-    ],
-    neopisSmartPMSBATSensor: [
-      'neopisSmartPMSBATTemperature',
-      'neopisSmartPMSBATVoltage',
-      'neopisSmartPMSBATCurrent',
-      'neopisSmartPMSBATPercent',
-      'neopisSmartPMSBATCellVoltage',
-      'neopisSmartPMSBATStatus',
-      'neopisSmartPMSBATError',
-      'neopisSmartPMSBATVoltageUnbalance',
-      'neopisSmartPMSBATTemperatureUnbalance',
-      'neopisSmartPMSBATTemperatureStatus',
-      'neopisSmartPMSBATVoltageStatus',
-      'neopisSmartPMSBATCurrentStatus',
-      'neopisSmartPMSBATErrorStatus',
-      'neopisSmartPMSBATOperationStatus',
-      'neopisSmartPMSBATContactorStatus',
-      'neopisSmartPMSBATFuseStatus',
-      'neopisSmartPMSBATEmergencyBell'
+    seahEngTurbeCompressorActuator: [
+      'seahEngTurboCompressorPowerSwitch',
+      'seahEngTurboCompressorStringActuator'
     ]
   },
   initNetworks: initNetworks,
