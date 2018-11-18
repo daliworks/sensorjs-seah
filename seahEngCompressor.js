@@ -49,11 +49,12 @@ function makeWriteOnlyRegisterDescription(name, address, bit, scale) {
   return  description;
 }
 
-function SeAHEngDeviceCompressor(master) {
+function SeAHEngDeviceCompressor(master, unitId) {
   var self = this;
 
   var config = {
     type: 'compressor',
+    unitId : unitId || 1,
     memoryZones: [
       { address: 30025, count: 18 },
       { address: 30100, count: 90 },

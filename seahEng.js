@@ -7,26 +7,29 @@ var ModbusMaster = require('./modbusRTUMaster');
 var SeAHEngBlower = require('./seahEngBlower');
 var SeAHEngCompressor = require('./seahEngCompressor');
 
-function SeAHEng(host) {
+function SeAHEng(config) {
   var   self = this;
 
-  ModbusMaster.call(self, host, 502);
+  ModbusMaster.call(self, config);
 
-  self.log('trace', 'Create :', host);
+  self.log('trace', 'Create new SeAHEng :', config);
 }
 
 util.inherits(SeAHEng, ModbusMaster);
 
 var seahEngs = [];
 
-function getSeAHEng(host){
+function getSeAHEng(config){
+  var host = config.host;
+  var port = (config.port && parseInt(config.port)) || 502;
+  var unitId = (config.unitId && parseInt(config.unitId)) || 1;
+
   var seahEng = _.find(seahEngs, function(seahEng) {
-    return  (seahEng.host === host);
+    return  (seahEng.host === host) && (seahEng.port === port);
   });
 
   if (!seahEng) {
-    logger.info('Create new SeAHEng');
-    seahEng = new SeAHEng(host);
+    seahEng = new SeAHEng(config);
     seahEngs.push(seahEng);
     seahEng.start();
   }
@@ -36,19 +39,31 @@ function getSeAHEng(host){
 
 module.exports = {
   get: getSeAHEng,
-  getDevice: function(type, host){
+  getDevice: function(type, deviceId){
     try {
-      var seahEng = getSeAHEng(host);
+      if (deviceId.split(':').length > 3) {
+        logger.error('Invalid device ID :', deviceId);
+        return undefined;
+      }
+
+      var config  = {
+        host : deviceId.split(':')[0],
+        port : deviceId.split(':')[1]
+      };
+
+      var unitId = (deviceId.split(':')[2] && parseInt(deviceId.split(':')[2])) || 1;
+
+      var seahEng = getSeAHEng(config);
       if (_.isUndefined(seahEng[type])) {
         switch (type) {
         case 'blower':
           logger.info('Create blower');
-          seahEng.blower = new SeAHEngBlower(seahEng);
+          seahEng.blower = new SeAHEngBlower(seahEng, unitId);
           seahEng.devices.push(seahEng.blower);
           break;
         case 'compressor':
           logger.info('Create compressor');
-          seahEng.compressor = new SeAHEngCompressor(seahEng);
+          seahEng.compressor = new SeAHEngCompressor(seahEng, unitId);
           seahEng.devices.push(seahEng.compressor);
           break;
 

@@ -49,11 +49,12 @@ function makeWriteOnlyRegisterDescription(name, address, bit, scale) {
   return  description;
 }
 
-function SeAHEngDeviceBlower(master) {
+function SeAHEngDeviceBlower(master, unitId) {
   var self = this;
 
   var config = {
     type: 'blower',
+    unitId : unitId || 1,
     memoryZones: [
       { address: 40001, count: 30 }
     ],

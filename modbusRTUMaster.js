@@ -18,6 +18,7 @@ try {
 }
 
 var MODBUS_UNIT_ID = 1;
+var MODBUS_PORT   = 502;
 var UPDATE_INTERVAL = 10000;
 var RETRY_CONNECTION_INTERVAL = 60000;
 
@@ -33,14 +34,25 @@ var RETRY_CONNECTION_INTERVAL = 60000;
 // cb: function (err, value)
 
 
-function ModbusRTUMaster(host, port) {
+function ModbusRTUMaster(config) {
   var self = this;
 
   self.id = new Date().getTime();
-  self.unitId = MODBUS_UNIT_ID;
   self.interval = UPDATE_INTERVAL;
-  self.host = host;
-  self.port = parseInt(port);
+
+  if (!_.isUndefined(config)) {
+    self.host = config.host || '0.0.0.0';
+    if (_.isUndefined(config.port)) {
+      self.port = MODBUS_PORT;
+    }
+    else {
+      self.port = parseInt(config.port);
+    }
+  }
+  else {
+    self.host = '0.0.0.0';
+    self.port = MODBUS_PORT;
+  }
   self.devices = [];
   self.connected = false;
   self.autoReconnect = true;
@@ -144,7 +156,7 @@ function ModbusRTUMaster(host, port) {
     self.readQueue.remove( function() { return true; });
     self.writeQueue.remove(function() { return true;});
 
-    self.log('trace', 'Socket closed:', host, port);
+    self.log('trace', 'Socket closed:', self.host, self.port);
     self.emit('disconnected');
   });
 
@@ -262,7 +274,7 @@ ModbusRTUMaster.prototype.startLoop = function () {
           _.each(device.memoryZones, function (set) {
             var callArgs = {
               client: self.client,
-              unitId: self.unitId,
+              unitId: device.unitId,
               registerAddress: set.address,
               registerCount: set.count,
               readCb: readDoneCB
@@ -338,13 +350,13 @@ ModbusRTUMaster.prototype.getValue = function (id, field) {
   return undefined;
 };
 
-ModbusRTUMaster.prototype.setValue = function (address, count, registers, cb) {
+ModbusRTUMaster.prototype.setValue = function (unitId, address, count, registers, cb) {
   var self = this;
 
   if (self.client) {
     var callArgs = {
       client: self.client,
-      unitId: self.unitId,
+      unitId: unitId,
       registerAddress: address,
       registerCount: count,
       data: registers,

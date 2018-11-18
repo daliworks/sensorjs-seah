@@ -22,6 +22,7 @@ function ModbusRTUDevice(master, config) {
   EventEmitter.call(self);
 
   self.id = new Date().getTime();
+  self.unitId = 1;
   self.master = master;
   self.run = false;
   self.interval = 10000;
@@ -125,7 +126,7 @@ ModbusRTUDevice.prototype.setValue = function (register, value) {
 
     registers[0] = new Buffer(4);
     registers[0][register.writeType](value, 0);
-    self.master.setValue(register.address, 1, registers, function(err, result) { resolve(err, result); });
+    self.master.setValue(self.unitId, register.address, 1, registers, function(err, result) { resolve(err, result); });
   });
 };
 

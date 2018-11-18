@@ -87,7 +87,7 @@ module.exports = {
       'seahEngTurboCompressorVibration',
       'seahEngTurboCompressorVolume'
     ],
-    seahEngTurbeCompressorActuator: [
+    seahEngTurboCompressorActuator: [
       'seahEngTurboCompressorPowerSwitch',
       'seahEngTurboCompressorStringActuator'
     ]

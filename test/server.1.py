@@ -1175,7 +1175,7 @@ class TESTCORE(threading.Thread):
 			time.sleep(1)
 
 class MBTCPSERVER(threading.Thread):
-	def __init__(self, host, port, inputRegisters, holdRegisters):
+	def __init__(self, inputRegisters, holdRegisters):
 		threading.Thread.__init__(self) 
 		# A very simple data store which maps addresses against their values.
 		self.inputRegisters = inputRegisters
@@ -1185,10 +1185,10 @@ class MBTCPSERVER(threading.Thread):
 		conf.SIGNED_VALUES = True
 
 		TCPServer.allow_reuse_address = True
-		self.app = get_server(TCPServer, (host, port), RequestHandler)
+		self.app = get_server(TCPServer, ('0.0.0.0', 502), RequestHandler)
 		print(self.app)
 
-		@self.app.route(slave_ids=[1, 2], function_codes=[1, 3, 4], addresses=list(range(0, 1000)))
+		@self.app.route(slave_ids=[1], function_codes=[1, 3, 4], addresses=list(range(0, 1000)))
 		def read_data_store(slave_id, function_code, address):
 			try:
 				value = 0
@@ -1210,7 +1210,7 @@ class MBTCPSERVER(threading.Thread):
 				return 0
 
 
-		@self.app.route(slave_ids=[1, 2], function_codes=[5, 15], addresses=list(range(0, 1000)))
+		@self.app.route(slave_ids=[1], function_codes=[5, 15], addresses=list(range(0, 1000)))
 		def write_data_store(slave_id, function_code, address, value):
 			try:
 				"""" Set value for address. """
@@ -1233,12 +1233,8 @@ if __name__ == '__main__':
 		inputRegisters=  defaultdict(ValueSet)
 		holdRegisters =  defaultdict(ValueSet)
 		test = TESTCORE(inputRegisters, holdRegisters)
+		server = MBTCPSERVER(inputRegisters, holdRegisters)
 		test.start()
-		servers = []
-		servers.append(MBTCPSERVER('0.0.0.0', 502, inputRegisters, holdRegisters))
-		servers.append(MBTCPSERVER('0.0.0.0', 503, inputRegisters, holdRegisters))
-		servers.append(MBTCPSERVER('0.0.0.0', 504, inputRegisters, holdRegisters))
-		for server in servers:
-			server.start()
+		server.start()
 	except Exception as err:
 		print(err)
