@@ -4,8 +4,11 @@ var _ = require('lodash');
 var util = require('util');
 var logger = require('.').Sensor.getLogger('Sensor');
 var ModbusMaster = require('./modbusRTUMaster');
-var SeAHEngBlower = require('./seahEngBlower');
-var SeAHEngCompressor = require('./seahEngCompressor');
+
+var SeAHEquipments = {
+  BL: require('./seahEngBlower'),
+  TC: require('./seahEngCompressor')
+};
 
 function SeAHEng(config) {
   var   self = this;
@@ -22,7 +25,7 @@ var seahEngs = [];
 function getSeAHEng(config){
   var host = config.host;
   var port = (config.port && parseInt(config.port)) || 502;
-  var unitId = (config.unitId && parseInt(config.unitId)) || 1;
+  //var unitId = (config.unitId && parseInt(config.unitId)) || 1;
 
   var seahEng = _.find(seahEngs, function(seahEng) {
     return  (seahEng.host === host) && (seahEng.port === port);
@@ -55,21 +58,13 @@ module.exports = {
 
       var seahEng = getSeAHEng(config);
       if (_.isUndefined(seahEng[type])) {
-        switch (type) {
-        case 'blower':
-          logger.info('Create blower');
-          seahEng.blower = new SeAHEngBlower(seahEng, unitId);
-          seahEng.devices.push(seahEng.blower);
-          break;
-        case 'compressor':
-          logger.info('Create compressor');
-          seahEng.compressor = new SeAHEngCompressor(seahEng, unitId);
-          seahEng.devices.push(seahEng.compressor);
-          break;
-
-        default:
-          logger.error('Not supported device type :', type);
+        if (!_.isUndefined(SeAHEquipments[type])) {
+          seahEng[type] = new SeAHEquipments[type](seahEng, unitId);
+          seahEng.devices.push(seahEng[type]);
         }
+        else{
+         logger.error('Not supported device type :', type);
+       }
       }
 
       return seahEng[type];

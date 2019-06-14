@@ -75,34 +75,45 @@ function ModbusRTUMaster(config) {
     var to;
     var readRegisters;
 
-    if (30000 <= task.registerAddress && task.registerAddress <= 39999) {
+    if (task.registerAddress <= 9999) {
+      readRegisters = client.readCoils;
+      from = task.registerAddress - 10001;
+      to = from + task.registerCount - 1;
+    } else if (10000 <= task.registerAddress && task.registerAddress <= 19999) {
+      readRegisters = client.readDiscreteInputs;
+      from = task.registerAddress - 10000;
+      to = from + task.registerCount;
+    } else if (30000 <= task.registerAddress && task.registerAddress <= 39999) {
       readRegisters = client.readInputRegisters;
       from = task.registerAddress - 30000;
-      to = from + task.registerCount - 1;
+      to = from + task.registerCount;
     } else if (40000 <= task.registerAddress && task.registerAddress <= 49999) {
       readRegisters = client.readHoldingRegisters;
       from = task.registerAddress - 40000;
-      to = from + task.registerCount - 1;
+      to = from + task.registerCount;
     } else {
       return done('Invalid address : ' + task.registerAddress);
     }
 
     self.log('Read Register :', unitId, from, to);
-    readRegisters(unitId, from, to, function readCb(err, data) {
-      if (!err) {
-        if (data.length < 2 || !Buffer.isBuffer(data[0]) || !Buffer.isBuffer(data[1])) {
-          self.log('error', 'modbus-tcp.readRegisters() Error: bad data format');
-          err = new Error('Bad data:', data);
+    try {
+      readRegisters(unitId, from, to, function readCb(err, data) {
+        if (!err) {
+          //    if (data.length < 2 || !Buffer.isBuffer(data[0]) || !Buffer.isBuffer(data[1])) {
+          //      self.log('error', 'modbus-tcp.readRegisters() Error: bad data format');
+          //       err = new Error('Bad data:', data);
+          //     }
+        } else {
+          self.log('error', 'modbus-tcp.readRegisters() Error:', err);
         }
-      }
-      else {
-        self.log('error', 'modbus-tcp.readRegisters() Error:', err);
-      }
 
-      cb && cb(err, task.registerAddress, task.registerCount, data);
+        cb && cb(err, task.registerAddress, task.registerCount, data);
+        return done && done(err);
+      });
+    } catch (err) {
       return done && done(err);
+    }
     });
-  });
 
   self.readQueue.drain = function () {
     self.log('debug', 'All the read tasks have been done.');

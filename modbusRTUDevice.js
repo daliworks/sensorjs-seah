@@ -89,30 +89,38 @@ util.inherits(ModbusRTUDevice, EventEmitter);
 ModbusRTUDevice.prototype.onDone = function (startAddress, count, registers) {
   var self = this;
 
+  self.log('trace', startAddress, count, registers);
   _.each(self.registers, function (register) {
     if (!_.isUndefined(register.readType) && (startAddress <= register.address && register.address < startAddress + count)) {
       try{
         var buffer = new Buffer(4);
- 
-        registers[register.address - startAddress].copy(buffer, 0);
-        if (registerSize[register.readType] > 1) {
-          registers[register.address - startAddress + 1].copy(buffer, 2);
-        }
-  
-        if (register.converter) {
-          register.value = register.converter(buffer[register.readType](0) || 0);
-        } 
-        else if (register.scale) {
-          register.value = (buffer[register.readType](0) || 0) * register.scale;
+
+        if (startAddress <= 19999) {
+          register.value = registers[register.address - startAddress];
+          register.time = new Date().getTime();
         }
         else {
-          register.value = (buffer[register.readType](0) || 0);
+
+          registers[register.address - startAddress].copy(buffer, 0);
+          if (registerSize[register.readType] > 1) {
+            registers[register.address - startAddress + 1].copy(buffer, 2);
+          }
+
+          if (register.converter) {
+            register.value = register.converter(buffer[register.readType](0) || 0);
+          } else if (register.scale) {
+            register.value = (buffer[register.readType](0) || 0) * register.scale;
+          } else {
+            register.value = (buffer[register.readType](0) || 0);
+          }
+          register.time = new Date().getTime();
         }
-        register.time = new Date().getTime();
       }
       catch(err) {
         self.log('trace', register);
         self.log('error', 'Occurred exception : ', startAddress, register.address, err);
+        register.value = 0;
+        register.time = new Date().getTime();
       }
     }
   });

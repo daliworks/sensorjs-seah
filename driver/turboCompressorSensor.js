@@ -14,10 +14,11 @@ function SeAHEngSensor(sensorInfo, options) {
 
   tokens = self.id.split('-');
 
-  self.deviceId = tokens[1];
-  self.field = tokens[2];
+  self.deviceType = tokens[1];
+  self.deviceId = tokens[2];
+  self.field = tokens[3];
 
-  self.device = SeAHEng.getDevice('compressor', self.deviceId);
+  self.device = SeAHEng.getDevice(self.deviceType, self.deviceId);
 
   self.lastData = { value: 0, time: 0};
   self.dataArray = [];

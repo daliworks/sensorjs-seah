@@ -114,4 +114,64 @@ SeahEngDevice.prototype.updateSimulation = function() {
   }
 };
 
+SeahEngDevice.makeRegisterDescription = function(address, min, max, readType, scale) {
+  
+  var description = {
+    name : ('00000' + address.toString()).slice(-5),
+    address: address,
+    scale : 1
+  };
+
+  if (!_.isUndefined(min) && !_.isUndefined(max) && !_.isUndefined(readType)) {
+    description.min = min;
+    description.max = max;
+    description.readType = readType;
+    if (!_.isUndefined(scale)) { 
+      description.scale = scale;
+    }
+    else {
+      description.scale = 1;
+    }
+  }
+  else {
+    if (!_.isUndefined(min)) {
+      description.readType = 'readUInt16BE';
+      description.converter = function(value) { return  (value >> min) & 1; }; // jshint ignore:line
+      description.name = description.name + '.' + min;
+    }
+    description.readType = 'readUInt16BE';
+  }
+
+  return  description;
+};
+
+ SeahEngDevice.makeWriteRegisterDescription = function(address, min, max, readType, writeType, scale) {
+  var description = {
+    name : ('00000' + address.toString()).slice(-5),
+    address: address
+  };
+
+  if (!_.isUndefined(min) && !_.isUndefined(max) && !_.isUndefined(readType) && !_.isUndefined(writeType)) {
+    description.min = min;
+    description.max = max;
+    description.readType = readType;
+    description.writeType = writeType;
+    if (!_.isUndefined(scale)) { 
+      description.scale = scale;
+    }
+    else {
+      description.scale = 1;
+    }
+  }
+  else {
+    if (!_.isUndefined(min)) {
+      description.name = description.name + '.' + min;
+    }
+    description.readType = 'readUInt16BE';
+    description.writeType = 'writeUInt16BE';
+  }
+
+  return  description;
+};
+
 module.exports = SeahEngDevice;

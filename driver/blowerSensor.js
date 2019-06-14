@@ -14,10 +14,11 @@ function SeAHEngSensor(sensorInfo, options) {
 
   tokens = self.id.split('-');
 
-  self.deviceId = tokens[1];
-  self.field = tokens[2];
+  self.deviceType = tokens[1];
+  self.deviceId = tokens[2];
+  self.field = tokens[3];
 
-  self.device = SeAHEng.getDevice('blower', self.deviceId);
+  self.device = SeAHEng.getDevice(self.deviceType, self.deviceId);
 
   self.lastData = { value: 0, time: 0};
   self.dataArray = [];
@@ -66,6 +67,7 @@ SeAHEngSensor.properties = {
   dataTypes: {
     'seahEngBlowerCount' : ['count'],
     'seahEngBlowerCurrent' : ['current'],
+    'seahEngBlowerElectricPower' : ['electricPower'],
     'seahEngBlowerFrequency' : ['frequency'],
     'seahEngBlowerNumber' : ['number'] ,
     'seahEngBlowerOnoff' : ['onoff'],
@@ -83,21 +85,23 @@ SeAHEngSensor.properties = {
   maxRetries: 8,
   idTemplate: '{gatewayId}-{deviceAddress}-{sequence}',
   onChange: {
-    'seahEngBlowerCount' : false,
-    'seahEngBlowerCurrent' : false,
-    'seahEngBlowerFrequency' : false,
-    'seahEngBlowerNumber' : false,
+    'seahEngBlowerCount' : true,
+    'seahEngBlowerCurrent' : true,
+    'seahEngBlowerElectricPower' : true,
+    'seahEngBlowerFrequency' : true,
+    'seahEngBlowerNumber' : true,
     'seahEngBlowerOnoff' : true,
-    'seahEngBlowerPercent' : false,
-    'seahEngBlowerPressure' : false,
-    'seahEngBlowerPressureMMH2O' : false,
-    'seahEngBlowerTemperature' : false,
-    'seahEngBlowerVibration' : false,
-    'seahEngBlowerVolume' : false
+    'seahEngBlowerPercent' : true,
+    'seahEngBlowerPressure' : true,
+    'seahEngBlowerPressureMMH2O' : true,
+    'seahEngBlowerTemperature' : true,
+    'seahEngBlowerVibration' : true,
+    'seahEngBlowerVolume' : true
   },
   models: [
     'seahEngBlowerCount',
     'seahEngBlowerCurrent',
+    'seahEngBlowerElectricPower',
     'seahEngBlowerFrequency',
     'seahEngBlowerNumber',
     'seahEngBlowerOnoff',

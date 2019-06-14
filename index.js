@@ -68,7 +68,8 @@ module.exports = {
       'seahEngBlowerPressure',
       'seahEngBlowerTemperature',
       'seahEngBlowerVibration',
-      'seahEngBlowerVolume'
+      'seahEngBlowerVolume',
+      'seahEngBlowerElectricPower',
     ],
     seahEngBlowerActuator: [
       'seahEngBlowerPowerSwitch',
